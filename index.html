@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini File System Manager - Presentation</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-light: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-red: #ef4444;
+            --accent-green: #22c55e;
+            --accent-amber: #f59e0b;
+            --border-col: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #020617;
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 1200px;
+            max-width: 95vw;
+            height: 675px;
+            max-height: 85vh;
+            background-color: var(--bg-main);
+            border-radius: 12px;
+            border: 1px solid var(--border-col);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            display: none;
+            flex: 1;
+            padding: 40px 50px;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-blue);
+            margin-bottom: 6px;
+        }
+
+        .slide-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-col);
+            padding-bottom: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-col);
+            border-radius: 8px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card.red-border { border-color: var(--accent-red); }
+        .card.green-border { border-color: var(--accent-green); }
+        .card.blue-border { border-color: var(--accent-blue); }
+        .card.amber-border { border-color: var(--accent-amber); }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--accent-blue);
+        }
+
+        .card-title.red { color: var(--accent-red); }
+        .card-title.green { color: var(--accent-green); }
+        .card-title.amber { color: var(--accent-amber); }
+
+        p, li {
+            font-size: 0.92rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: var(--text-light);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        ul li {
+            position: relative;
+            padding-left: 18px;
+        }
+
+        ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .code-box {
+            background-color: #0b1120;
+            border: 1px solid var(--border-col);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #bae6fd;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .highlight-banner {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), transparent);
+            border-left: 4px solid var(--accent-red);
+            padding: 10px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fca5a5;
+        }
+
+        .highlight-banner.green {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.15), transparent);
+            border-left: 4px solid var(--accent-green);
+            color: #86efac;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border: 1px solid var(--border-col);
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-download {
+            background-color: #0284c7;
+            color: white;
+            border-color: #0284c7;
+        }
+        .btn-download:hover {
+            background-color: #38bdf8;
+        }
+
+        .slide-counter {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            margin-top: 6px;
+        }
+        th, td {
+            padding: 6px 10px;
+            border: 1px solid var(--border-col);
+            text-align: left;
+        }
+        th {
+            background-color: #1e293b;
+            color: var(--accent-blue);
+        }
+        td {
+            color: var(--text-sub);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="badge">Operating Systems Project Presentation</div>
+            <h1 class="slide-title" style="font-size: 2.2rem; border-bottom: none; margin-top: 10px;">
+                Mini File System Manager with User Permissions
+            </h1>
+            <p style="font-size: 1.1rem; color: var(--accent-blue); margin-bottom: 25px;">
+                A Simulated Unix-Style File System with Role-Based Access Control, Intrusion Detection, and File Versioning
+            </p>
+
+            <div class="grid-3" style="margin-bottom: 25px;">
+                <div class="card blue-border">
+                    <div class="card-title">🛡️ Prevention</div>
+                    <p>Unix 9-bit DAC permission bits, centralized checking choke point, salted SHA-256 passwords.</p>
+                </div>
+                <div class="card red-border">
+                    <div class="card-title red">🚨 Detection (Sec IX)</div>
+                    <p>Intrusion detection & automatic 120s account lockout (3 strikes in 60 seconds).</p>
+                </div>
+                <div class="card green-border">
+                    <div class="card-title green">🔄 Recovery (Sec X)</div>
+                    <p>File versioning (bounded K=5), non-destructive rollback & SHA-256 integrity verification.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: auto; background-color: rgba(15, 23, 42, 0.8);">
+                <p style="color: var(--accent-amber); font-weight: bold; margin-bottom: 4px;">Project Team & Mentorship:</p>
+                <p><strong>Srikar</strong> (24BYB0144) &nbsp;|&nbsp; <strong>Pradeep</strong> (24BYB0025) &nbsp;|&nbsp; <strong>Sarath</strong> (24BYB0047)</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Guided by: <strong>Dr. Balasubramani M</strong> &bull; School of Computer Science and Engineering</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Problem Statement & Blind Spots -->
+        <div class="slide">
+            <div class="badge">Background & Problem Definition</div>
+            <h2 class="slide-title">Problem Statement & The Two Security Blind Spots</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">The Multi-User Storage Challenge</div>
+                    <ul>
+                        <li><strong>Shared Infrastructure:</strong> Multi-tenant environments share underlying storage. Without enforced boundaries, users can read or delete unauthorized data.</li>
+                        <li><strong>Application-Level Simulation:</strong> We simulate Unix DAC with in-memory tree nodes and JSON persistence without altering OS kernels.</li>
+                        <li><strong>Central Choke Point:</strong> Every single CRUD command must pass through strict permission verification.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title amber">Two Blind Spots of Traditional DAC</div>
+                    <div class="card red-border" style="margin-bottom: 12px; padding: 12px;">
+                        <strong style="color: var(--accent-red);">❌ Blind Spot #1: Probing & Brute Force</strong>
+                        <p style="font-size: 0.85rem; margin: 4px 0 0;">Standard DAC silently denies unauthorized requests without alerting admins or stopping attackers.</p>
+                        <p style="font-size: 0.85rem; color: #86efac; margin: 2px 0 0;"><strong>Solution:</strong> Active Intrusion Detection & 120s Account Lockout.</p>
+                    </div>
+                    <div class="card green-border" style="padding: 12px;">
+                        <strong style="color: var(--accent-green);">❌ Blind Spot #2: Irreversible Overwrites</strong>
+                        <p style="font-size: 0.85rem; margin: 4px 0 0;">Standard DAC cannot recover from accidental overwrites by authorized users with write permissions.</p>
+                        <p style="font-size: 0.85rem; color: #86efac; margin: 2px 0 0;"><strong>Solution:</strong> Non-destructive File Versioning & Rollback.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Architecture -->
+        <div class="slide">
+            <div class="badge">System Architecture</div>
+            <h2 class="slide-title">Layered Architecture & Central Choke Point</h2>
+            <div class="grid-2">
+                <div>
+                    <div class="card blue-border" style="margin-bottom: 8px; padding: 10px 14px;">
+                        <strong>1. Shell Layer (<code>shell.py</code>)</strong>
+                        <p style="font-size: 0.85rem; margin: 0;">Interactive Unix-like CLI interface for user interaction.</p>
+                    </div>
+                    <div class="card amber-border" style="margin-bottom: 8px; padding: 10px 14px;">
+                        <strong>2. Enforcement Layer (<code>filesystem.py</code> / <code>permissions.py</code>)</strong>
+                        <p style="font-size: 0.85rem; margin: 0;">Central choke point for path resolution and 9-bit rwx checking.</p>
+                    </div>
+                    <div class="card red-border" style="margin-bottom: 8px; padding: 10px 14px;">
+                        <strong>3. Intrusion Detector (<code>intrusion.py</code> - NEW)</strong>
+                        <p style="font-size: 0.85rem; margin: 0;">Sliding window event counter; flags and locks abusive accounts.</p>
+                    </div>
+                    <div class="card green-border" style="padding: 10px 14px;">
+                        <strong>4. Version Manager (<code>versioning.py</code> - NEW)</strong>
+                        <p style="font-size: 0.85rem; margin: 0;">Snapshots, diffs, and non-destructive rollbacks with SHA-256 checks.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Core Design Principles</div>
+                    <ul>
+                        <li><strong>Zero Shell Bypass:</strong> The shell never communicates with storage directly.</li>
+                        <li><strong>Unified Choke Point:</strong> Intrusion detection and versioning hook into the single check function, guaranteeing full coverage.</li>
+                        <li><strong>RBAC Roles:</strong> Admin (superuser bypass + recovery control) and Standard User (strict rwx enforcement).</li>
+                        <li><strong>Persistent State:</strong> Fully serialized to <code>storage.json</code> and <code>users.json</code> across reboots.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Data Model & Permissions -->
+        <div class="slide">
+            <div class="badge">Data & Permission Model</div>
+            <h2 class="slide-title">Node Structure, 9-Bit Permissions & Resolution</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Node Model & 9-Bit Octal Bits</div>
+                    <ul>
+                        <li><strong>Node Metadata:</strong> <code>name</code>, <code>owner</code>, <code>group</code>, <code>permission</code>, <code>content</code>, and bounded <code>versions</code> list.</li>
+                        <li><strong>3 Classes:</strong> Owner (bit 6-8), Group (bit 3-5), Others (bit 0-2).</li>
+                        <li><strong>3 Modes:</strong> Read (4), Write (2), Execute (1).</li>
+                        <li><strong>Directory Execute:</strong> Represents traversal permission. Path resolution fails if intermediate directories lack Execute bit.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">Centralized O(1) Check Logic</div>
+                    <div class="code-box">def has_permission(node, user, requested):
+    if user.role == 'admin':
+        return True
+    cls = ('owner' if user.username == node.owner 
+           else 'group' if user.group == node.group 
+           else 'other')
+    shift = {'owner': 6, 'group': 3, 'other': 0}[cls]
+    bits = (node.permission >> shift) & 0o7
+    return (bits & requested) == requested</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: CORE - Intrusion Detection (Section IX) -->
+        <div class="slide">
+            <div class="badge" style="color: var(--accent-red);">⭐ Core Feature 1 (Section IX)</div>
+            <h2 class="slide-title">Intrusion Detection & Automatic Account Lockout</h2>
+            <div class="highlight-banner">
+                Active Defense Policy: Automatically detects unauthorized probing and protects against brute-force attacks.
+            </div>
+            <div class="grid-3" style="margin-bottom: 16px;">
+                <div class="card red-border">
+                    <div class="card-title red">THRESHOLD (N)</div>
+                    <h3 style="font-size: 1.5rem; color: #fff;">3 Strikes</h3>
+                    <p style="font-size: 0.8rem; margin: 0;">3 suspicious events trigger lockout</p>
+                </div>
+                <div class="card amber-border">
+                    <div class="card-title amber">WINDOW (W)</div>
+                    <h3 style="font-size: 1.5rem; color: #fff;">60 Seconds</h3>
+                    <p style="font-size: 0.8rem; margin: 0;">Sliding time window for tracking</p>
+                </div>
+                <div class="card red-border">
+                    <div class="card-title red">LOCK TIME (T)</div>
+                    <h3 style="font-size: 1.5rem; color: #fff;">120 Seconds</h3>
+                    <p style="font-size: 0.8rem; margin: 0;">Active session killed & login disabled</p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <strong style="color: var(--accent-red);">Trigger Events:</strong>
+                    <ul>
+                        <li>Permission denials during <code>cd</code>, <code>cat</code>, <code>write</code>, <code>chmod</code>, etc.</li>
+                        <li>Failed login attempts (tracked per attempted username).</li>
+                    </ul>
+                </div>
+                <div class="card blue-border">
+                    <strong style="color: var(--accent-blue);">NEW Admin Commands:</strong>
+                    <ul>
+                        <li><code>alerts</code>: Review recent security flags and active locks.</li>
+                        <li><code>unlock &lt;user&gt;</code>: Manually clear lockout early with full audit entry.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Intrusion Detection Walkthrough -->
+        <div class="slide">
+            <div class="badge" style="color: var(--accent-red);">Section IX Implementation & Demo</div>
+            <h2 class="slide-title">Intrusion Detection Algorithm & Trace</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title red">Sliding Window Algorithm</div>
+                    <div class="code-box">def report_event(self, username, kind):
+    now = time()
+    q = self.events[username] # deque of times
+    q.append(now)
+    while q and now - q[0] > 60:
+        q.popleft()
+    audit(username, kind, 'DENIED')
+    if len(q) >= 3:
+        self.lock(username, now + 120)
+
+def lock(self, username, until):
+    users[username].locked_until = until
+    end_session(username) # force logout
+    q.clear()
+    audit(username, 'LOCK', 'ALERT')
+    alerts.append((username, until))</div>
+                </div>
+                <div class="card">
+                    <div class="card-title amber">Interactive Attack Scenario Trace</div>
+                    <div class="code-box" style="color: #e2e8f0; font-size: 0.78rem;">#bob:/$ cd /docs
+Permission denied: /docs (1/3)
+#bob:/$ cat /docs/report.txt
+Permission denied: /docs (2/3)
+#bob:/$ ls /docs
+Permission denied: /docs (3/3)
+<span style="color: #ef4444; font-weight: bold;">ALERT: 'bob' locked for 120 s. Session ended.</span>
+
+#:/$ login bob bobpass
+<span style="color: #f59e0b;">Account locked. Try again in 117 s.</span>
+
+#admin:/$ alerts
+bob LOCK 3 denials / 60 s until 10:07:41
+#admin:/$ unlock bob
+<span style="color: #22c55e;">bob unlocked.</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: CORE - File Versioning & Rollback (Section X) -->
+        <div class="slide">
+            <div class="badge" style="color: var(--accent-green);">⭐ Core Feature 2 (Section X)</div>
+            <h2 class="slide-title">File Versioning & Non-Destructive Rollback</h2>
+            <div class="highlight-banner green">
+                Recovery Control: Automatically snapshots previous file versions on overwrite with cryptographic SHA-256 integrity validation.
+            </div>
+            <div class="grid-3" style="margin-bottom: 16px;">
+                <div class="card green-border">
+                    <div class="card-title green">BOUNDED HISTORY</div>
+                    <h3 style="font-size: 1.5rem; color: #fff;">K = 5 Versions</h3>
+                    <p style="font-size: 0.8rem; margin: 0;">Retains up to 5 snapshots (FIFO eviction)</p>
+                </div>
+                <div class="card blue-border">
+                    <div class="card-title">NON-DESTRUCTIVE</div>
+                    <h3 style="font-size: 1.5rem; color: #fff;">Undoable</h3>
+                    <p style="font-size: 0.8rem; margin: 0;">Current content snapshotted before rollback</p>
+                </div>
+                <div class="card amber-border">
+                    <div class="card-title amber">INTEGRITY CHECK</div>
+                    <h3 style="font-size: 1.5rem; color: #fff;">SHA-256</h3>
+                    <p style="font-size: 0.8rem; margin: 0;">Asserts digest match before restoring</p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card green-border">
+                    <strong style="color: var(--accent-green);">NEW Versioning Commands:</strong>
+                    <ul>
+                        <li><code>history &lt;path&gt;</code>: Lists stored versions with author & timestamp.</li>
+                        <li><code>diff &lt;path&gt; &lt;v1&gt; &lt;v2&gt;</code>: Line-level difference display.</li>
+                        <li><code>restore &lt;path&gt; &lt;v&gt;</code>: Roll back file to version v safely.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <strong style="color: var(--accent-blue);">Permission & Complexity Rules:</strong>
+                    <ul>
+                        <li>Versions inherit file permissions (read for history/diff, write for restore).</li>
+                        <li>Storage complexity bounded strictly to O(K &bull; s).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Versioning Code & Session -->
+        <div class="slide">
+            <div class="badge" style="color: var(--accent-green);">Section X Implementation & Demo</div>
+            <h2 class="slide-title">Versioning Pseudocode & Live Session</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title green">Snapshot & Restore Logic</div>
+                    <div class="code-box">def write(self, path, user, data):
+    node = self.resolve(path, user)
+    require_permission(node, user, WRITE, 'write')
+    if node.content != '':
+        snapshot(node, user)
+    node.content = data
+
+def restore(self, path, user, num):
+    node = self.resolve(path, user)
+    require_permission(node, user, WRITE, 'restore')
+    v = find_version(node, num)
+    assert sha256(v.content) == v.sha # integrity check
+    snapshot(node, user) # save current before rollback!
+    node.content = v.content</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Live Non-Destructive Session</div>
+                    <div class="code-box" style="color: #e2e8f0; font-size: 0.78rem;">#alice:/docs$ write report.txt Draft 1
+#alice:/docs$ write report.txt Draft 2
+#alice:/docs$ write report.txt Draft 3
+
+#alice:/docs$ history report.txt
+v1 alice 10:02:11 "Draft 1"
+v2 alice 10:02:19 "Draft 2"
+(current) "Draft 3"
+
+#alice:/docs$ restore report.txt 1
+<span style="color: #22c55e;">Restored v1. Previous content saved as v3.</span>
+
+#alice:/docs$ cat report.txt
+<span style="color: #38bdf8;">Draft 1</span>
+<span style="color: #94a3b8;">(Can be undone anytime by restoring v3)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Commands & Audit Log -->
+        <div class="slide">
+            <div class="badge">Interface & Verification</div>
+            <h2 class="slide-title">Supported Commands & Persistent Audit Trail</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Full Supported Command Set</div>
+                    <ul>
+                        <li><strong>Auth / Session:</strong> <code>login</code>, <code>logout</code>, <code>whoami</code>, <code>useradd</code></li>
+                        <li><strong>File / Dir CRUD:</strong> <code>mkdir</code>, <code>touch</code>, <code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>cat</code>, <code>write</code>, <code>chmod</code>, <code>chown</code>, <code>rm</code>, <code>stat</code></li>
+                        <li><strong>Versioning (NEW):</strong> <code>history</code>, <code>diff</code>, <code>restore</code></li>
+                        <li><strong>Intrusion (NEW):</strong> <code>alerts</code>, <code>unlock</code></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">Sample Persistent Audit Entries</div>
+                    <table>
+                        <tr><th>User</th><th>Operation</th><th>Target</th><th>Result</th></tr>
+                        <tr><td>admin</td><td>CHMOD</td><td>/docs 0o750</td><td><span style="color: #22c55e;">OK</span></td></tr>
+                        <tr><td>alice</td><td>WRITE</td><td>/docs/rpt.txt</td><td><span style="color: #22c55e;">OK</span></td></tr>
+                        <tr><td>bob</td><td>TRAVERSE</td><td>/docs</td><td><span style="color: #ef4444;">DENIED</span></td></tr>
+                        <tr><td>bob</td><td>LOCK</td><td>bob (120 s)</td><td><span style="color: #f59e0b;">ALERT</span></td></tr>
+                        <tr><td>admin</td><td>UNLOCK</td><td>bob</td><td><span style="color: #22c55e;">OK</span></td></tr>
+                        <tr><td>alice</td><td>RESTORE</td><td>/docs/rpt.txt v1</td><td><span style="color: #22c55e;">OK</span></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Test Cases -->
+        <div class="slide">
+            <div class="badge">Verification & Testing</div>
+            <h2 class="slide-title">Comprehensive Test Suite (T1 – T10)</h2>
+            <div class="card">
+                <table>
+                    <tr><th>#</th><th>Scenario</th><th>Expected Result</th><th>Module</th></tr>
+                    <tr><td><strong>T1</strong></td><td>3 denials by one user in 60 s</td><td>Flagged, locked 120s, session terminated</td><td>Intrusion Detection</td></tr>
+                    <tr><td><strong>T2</strong></td><td>2 denials, 61 s pause, then 1</td><td>No lock (sliding window expired)</td><td>Intrusion Detection</td></tr>
+                    <tr><td><strong>T3</strong></td><td>Login while locked</td><td>Rejected before password check</td><td>Intrusion Detection</td></tr>
+                    <tr><td><strong>T4</strong></td><td>Wait 120 s after lock</td><td>Account automatically usable again</td><td>Intrusion Detection</td></tr>
+                    <tr><td><strong>T5</strong></td><td>Admin runs unlock &lt;user&gt;</td><td>Lock cleared immediately & logged</td><td>Intrusion Detection</td></tr>
+                    <tr><td><strong>T6</strong></td><td>Overwrite file</td><td>Previous content saved as version</td><td>File Versioning</td></tr>
+                    <tr><td><strong>T7</strong></td><td>Reader without write runs restore</td><td>Permission denied and logged</td><td>Access Control</td></tr>
+                    <tr><td><strong>T8</strong></td><td>More than K = 5 overwrites</td><td>Oldest version evicted (FIFO)</td><td>File Versioning</td></tr>
+                    <tr><td><strong>T9</strong></td><td>Restore a version</td><td>Current content saved as new version</td><td>File Versioning</td></tr>
+                    <tr><td><strong>T10</strong></td><td>System reboot</td><td>Tree, versions & locks persist</td><td>JSON Persistence</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 11: Evaluation & Future Work -->
+        <div class="slide">
+            <div class="badge">Critical Analysis</div>
+            <h2 class="slide-title">Advantages, Limitations & Future Roadmap</h2>
+            <div class="grid-3">
+                <div class="card green-border">
+                    <div class="card-title green">Advantages</div>
+                    <ul>
+                        <li>Unified Prevention, Detection & Recovery.</li>
+                        <li>Single permission choke point (zero bypass).</li>
+                        <li>Tamper-proof SHA-256 verification.</li>
+                    </ul>
+                </div>
+                <div class="card amber-border">
+                    <div class="card-title amber">Limitations</div>
+                    <ul>
+                        <li>Single primary group per user.</li>
+                        <li>Full copies instead of deltas.</li>
+                        <li>Fixed static thresholds.</li>
+                    </ul>
+                </div>
+                <div class="card blue-border">
+                    <div class="card-title">Future Roadmap</div>
+                    <ul>
+                        <li>R/W file locking with deadlock detection.</li>
+                        <li>Delta-based version diff storage.</li>
+                        <li>Adaptive machine-learned thresholds.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Conclusion -->
+        <div class="slide">
+            <div class="badge">Conclusion</div>
+            <h2 class="slide-title">Summary & Concluding Remarks</h2>
+            <div class="card" style="padding: 24px;">
+                <ul style="font-size: 1rem; line-height: 1.8;">
+                    <li><strong>Integrated Security Model:</strong> Successfully unified Unix-style Discretionary Access Control, active intrusion detection, and file versioning.</li>
+                    <li><strong>Active Defense (Section IX):</strong> Converts passive audit logs into active defense via automatic 120s lockout on 3 violations within 60s, paired with admin alert management.</li>
+                    <li><strong>Reversible Recovery (Section X):</strong> Capped 5-snapshot per-file versioning with cryptographic integrity and non-destructive rollbacks.</li>
+                    <li><strong>Robust & Verified:</strong> 100% pass rate across test suite scenarios with persistent JSON state.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn" onclick="prevSlide()">◀ Previous</button>
+        <div class="slide-counter" id="slideNum">Slide 1 / 12</div>
+        <button class="btn" onclick="nextSlide()">Next ▶</button>
+        <a class="btn btn-download" href="Mini_File_System_Presentation.pptx" download>💾 Download .PPTX</a>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const counter = document.getElementById('slideNum');
+
+        function updateSlide() {
+            slides.forEach((s, idx) => {
+                s.classList.toggle('active', idx === currentSlide);
+            });
+            counter.innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+    </script>
+</body>
+</html>
